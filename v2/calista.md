@@ -80,19 +80,19 @@ ORDER BY (table_name, check_time);
 
 The `status` column is central to interpreting results.
 
-### 0 – INFO
+0 – INFO
 - **Purpose:** Used for informational checks.  
 - **Example:** Logging row counts just for awareness, not as a strict DQ rule. It’s a soft check and does **not trigger alerts**.
 
-### 1 – PASS
+1 – PASS
 - **Purpose:** Check passed successfully.  
 - **Example:** Row counts within expected range, primary keys are unique, foreign keys all valid. Indicates **healthy data**.
 
-### 2 – WARN
+2 – WARN
 - **Purpose:** Check is borderline or slightly outside expected thresholds.  
 - **Example:** Minor missing values (<5%), reorder rate slightly off. Alerts you that **review may be needed**, but it isn’t critical.
 
-### 3 – FAIL
+3 – FAIL
 - **Purpose:** Check failed or violated critical rules.  
 - **Example:** Duplicate primary keys, required fields null, FK references missing. Signals **urgent action needed**.
 
