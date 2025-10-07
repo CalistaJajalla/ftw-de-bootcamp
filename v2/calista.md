@@ -347,13 +347,13 @@ WHERE lengthUTF8(product_name) > 512;
 
 Checks general table size expectations or metric baselines. 
 
-Where did I get this info from? 
+- Where did I get this info from? 
 
-Ans: From Kaggle :>. I checked 'Data Explorer' of dataset, specifically aisles.csv, departments.csv, products.csv. I
+  - Ans: From Kaggle :>. I checked 'Data Explorer' of dataset, specifically aisles.csv, departments.csv, products.csv. I
 
-Is this part necessary?
+- Is this part necessary?
 
-Ans: Not really, since we already know what's in the dataset. Although this can be helpful for checking ingestion problems.
+  - Ans: Not really, since we already know what's in the dataset. Although this can be helpful for checking ingestion problems.
 
 Sample code:
 ```sql
