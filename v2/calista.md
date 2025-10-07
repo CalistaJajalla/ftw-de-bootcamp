@@ -15,11 +15,14 @@
   - [3.1 Row Counts](#31-row-counts)  
   - [3.2 Primary Key Uniqueness](#32-primary-key-uniqueness)  
 - [4️⃣ Table-Level Checks & Story](#4️⃣-table-level-checks--story)  
-  - [4.1 Aisles](#41-aisles)  
-  - [4.2 Departments](#42-departments)  
-  - [4.3 Products](#43-products)  
-  - [4.4 Orders & Order Products](#44-orders--order-products)  
-  - [4.5 Reorder & Foreign Key Checks](#45-reorder--foreign-key-checks)  
+  - [4.1. Duplicate Checks and Removal Candidates](#1-duplicate-checks-and-removal-candidates)  
+  - [4.2. Uniqueness of Primary Key](#2-uniqueness-of-primary-key)  
+  - [4.3. Null or Missing Value Checks](#3-null-or-missing-value-checks)  
+  - [4.4. Referential Integrity Checks (Foreign Key Validation)](#4-referential-integrity-checks-foreign-key-validation)  
+  - [4.5. Domain / Category Checks](#5-domain--category-checks)  
+  - [4.6. Text Length / String Constraints](#6-text-length--string-constraints)  
+  - [4.7. Erroneous Row Detection (Schema Mismatch)](#7-erroneous-row-detection-schema-mismatch)  
+  - [Data Quality Checks Summary](#data-quality-checks-summary)
 - [5️⃣ Checklist for Data Cleaning Story](#5️⃣-checklist-for-data-cleaning-story)  
 - [6️⃣ Next Steps & Links](#6️⃣-next-steps--links)
 
@@ -199,4 +202,187 @@ SELECT now(), 'raw___insta_orders', 'distinct_order_id', 0,
        'unique order IDs'
 FROM raw.raw___insta_orders;
 ```
+---
+## 4️⃣ Table-Level Data Quality Checks (Summary and Explanation)
+
+This section defines the per-table checks used for the **Instacart dataset**. Each table was tested for **integrity, consistency, and reference completeness** based on the Kaggle dataset, then logged into the shared audit table `raw._cali_insta__dq_checks`.
+
+The main principle was the same as the global checks, basically classifying checks into:
+- **1 = PASS** (meets expected conditions)
+- **2 = WARN** (slightly off but still acceptable range)
+- **3 = FAIL** (requires data cleaning or investigation)
+
+### 4.1 Duplicate Checks and Removal Candidates
+
+Detecting duplicate rows helps identify redundant data that can inflate aggregates or cause inconsistencies when joining tables. Rather than dropping them immediately, duplicates were logged for manual validation or SQL removal later.
+
+**Coder's notes**: These are **not the exact codes** that I run. I used per table checks so the arrangment and the format changed from the codes listed below. Also, I used a lot of UNION ALL per table :>.
+
+Sample codes:
+```sql
+-- Aisles
+SELECT count() - uniqExact(SHA256(concat(toString(aisle_id),'||', ifNull(aisle,'')))) AS dup_rows
+FROM raw.raw___insta_aisles;
+
+-- Departments
+SELECT count() - uniqExact(SHA256(concat(toString(department_id),'||', ifNull(department,'')))) AS dup_rows
+FROM raw.raw___insta_departments;
+
+-- Products
+SELECT count() - uniqExact(SHA256(concat(toString(product_id),'||', ifNull(product_name,''),'||',toString(aisle_id),'||',toString(department_id)))) AS dup_rows
+FROM raw.raw___insta_products;
+```
+### 4.2 Uniqueness of Primary Key
+
+These checks confirm that every key field (e.g., order_id, product_id) is unique. Violations here directly influence table integrity and the accuracy of foreign key mapping.
+
+Sample codes:
+```sql
+SELECT uniqExact(aisle_id) AS unique_aisles FROM raw.raw___insta_aisles;
+SELECT uniqExact(department_id) AS unique_departments FROM raw.raw___insta_departments;
+SELECT uniqExact(product_id) AS unique_products FROM raw.raw___insta_products;
+SELECT uniqExact(order_id) AS unique_orders FROM raw.raw___insta_orders;
+```
+
+### 4.3 Null or Missing Value Checks
+
+isnull().sum() identifies incomplete records that could break joins or cause null propagation during transformations. Empty string filters is also an extra layer of validation, especially for text-based columns like product or department names.
+
+Sample codes:
+```sql
+-- Aisles
+SELECT countIf(aisle IS NULL OR aisle = '') AS missing FROM raw.raw___insta_aisles;
+
+-- Departments
+SELECT countIf(department IS NULL OR department = '') AS missing FROM raw.raw___insta_departments;
+
+-- Products
+SELECT
+    countIf(product_name IS NULL OR product_name = '') +
+    countIf(aisle_id IS NULL) +
+    countIf(department_id IS NULL) AS total_missing
+FROM raw.raw___insta_products;
+
+-- Orders
+SELECT (countIf(days_since_prior_order IS NULL) / count()) * 100 AS pct_missing
+FROM raw.raw___insta_orders;
+```
+
+### 4.4 Referential Integrity Checks (Foreign Key Validation)
+
+These ensure that linked tables reference valid entries. For instance, every order_id in the prior table must exist in the orders table, preventing orphaned records and preserving relational structure.
+
+Sample codes:
+```sql
+-- Products referencing Aisles and Departments
+SELECT count() AS missing_aisle_ref
+FROM raw.raw___insta_products p
+LEFT JOIN raw.raw___insta_aisles a ON p.aisle_id = a.aisle_id
+WHERE a.aisle_id IS NULL;
+
+SELECT count() AS missing_department_ref
+FROM raw.raw___insta_products p
+LEFT JOIN raw.raw___insta_departments d ON p.department_id = d.department_id
+WHERE d.department_id IS NULL;
+
+-- Order_Products_Prior
+SELECT count() AS missing_product_fk
+FROM raw.raw___insta_order_products_prior op
+LEFT JOIN raw.raw___insta_products p ON op.product_id = p.product_id
+WHERE p.product_id IS NULL;
+
+SELECT count() AS missing_order_fk
+FROM raw.raw___insta_order_products_prior op
+LEFT JOIN raw.raw___insta_orders o ON op.order_id = o.order_id
+WHERE o.order_id IS NULL;
+
+-- Order_Products_Train
+SELECT count() AS missing_product_fk
+FROM raw.raw___insta_order_products_train op
+LEFT JOIN raw.raw___insta_products p ON op.product_id = p.product_id
+WHERE p.product_id IS NULL;
+
+SELECT count() AS missing_order_fk
+FROM raw.raw___insta_order_products_train op
+LEFT JOIN raw.raw___insta_orders o ON op.order_id = o.order_id
+WHERE o.order_id IS NULL;
+```
+
+### 4.5 Domain / Category Checks
+
+These validate that categorical fields (like reordered flags or department_ids) contain only permissible values. Such checks test consistency and prevent invalid groupings in analysis or modeling.
+
+Sample codes:
+```sql
+-- Orders: Valid day-of-week (0–6) and hour-of-day (0–23)
+SELECT countIf(toInt32(order_dow) < 0 OR toInt32(order_dow) > 6) AS invalid_dow
+FROM raw.raw___insta_orders;
+
+SELECT countIf(toInt32(order_hour_of_day) < 0 OR toInt32(order_hour_of_day) > 23) AS invalid_hour
+FROM raw.raw___insta_orders;
+
+-- Order_Products_Prior and Train: reordered flag in {0,1}
+SELECT countIf(reordered NOT IN (0,1) OR reordered IS NULL) AS invalid
+FROM raw.raw___insta_order_products_prior;
+
+SELECT countIf(reordered NOT IN (0,1) OR reordered IS NULL) AS invalid
+FROM raw.raw___insta_order_products_train;
+
+-- Orders: order_number domain
+SELECT max(order_number) AS max_order_number FROM raw.raw___insta_orders;
+```
+
+### 4.6 Text Length / String Constraints
+
+String length validation (e.g., product names not exceeding 512 characters) detects anomalies from poorly imported or corrupted text data. This can also help standardize downstream text analytics and metadata consistency.
+
+Sample code:
+```sql
+-- Products: product_name length <= 512 characters
+SELECT count() AS over_512
+FROM raw.raw___insta_products
+WHERE lengthUTF8(product_name) > 512;
+```
+
+### 4.7 Statistical / Aggregate Health Checks
+
+Checks general table size expectations or metric baselines. 
+
+Where did I get this info from? 
+Ans: From Kaggle :>. I checked 'Data Explorer' of dataset, specifically aisles.csv, departments.csv, products.csv. I
+
+Is this part necessary?
+Ans: Not really, since we already know what's in the dataset. Although this can be helpful for checking ingestion problems.
+
+Sample code:
+```sql
+-- Orders baseline: row and user count
+SELECT count() AS total_orders, uniqExact(user_id) AS unique_users
+FROM raw.raw___insta_orders;
+
+-- Products baseline: expected ~49,688 unique products
+SELECT uniqExact(product_id) AS unique_products FROM raw.raw___insta_products;
+
+-- Reorder rate (expected ~59%)
+SELECT
+    toFloat64(sum(toUInt64(reordered))) / toFloat64(count()) * 100.0 AS reorder_pct
+FROM raw.raw___insta_order_products_prior;
+
+SELECT
+    toFloat64(sum(toUInt64(reordered))) / toFloat64(count()) * 100.0 AS reorder_pct
+FROM raw.raw___insta_order_products_train;
+```
+---
+## Data Quality Checks Summary
+
+| Table Name | Checks Performed |
+|-------------|------------------|
+| **orders** | **Duplicate Checks:** `orders.duplicated().sum()` to detect repeated order entries.<br>**Primary Key Uniqueness:** `orders['order_id'].is_unique` to verify unique identifiers.<br>**Null Checks:** `orders.isnull().sum()` for missing attributes.<br>**Referential Integrity:** Ensured `order_id` exists in dependent tables (`prior`, `train`). |
+| **products** | **Duplicate Checks:** `products.duplicated().sum()` to identify repeated product rows.<br>**Primary Key Uniqueness:** `products['product_id'].is_unique` to maintain product integrity.<br>**Null or Missing Values:** `products.isnull().sum()` and filtering empty product names.<br>**Domain Checks:** `products['aisle_id']` and `products['department_id']` to verify expected categorical values.<br>**String Constraints:** `df['product_name'].str.len().max()` to flag overlong or malformed names. |
+| **departments** | **Duplicate Checks:** `departments.duplicated().sum()` for repeated department rows.<br>**Primary Key Uniqueness:** `departments['department_id'].is_unique`.<br>**Null Checks:** `departments.isnull().sum()` and empty strings for department names. |
+| **aisles** | **Duplicate Checks:** `aisles.duplicated().sum()`.<br>**Primary Key Uniqueness:** `aisles['aisle_id'].is_unique`.<br>**Null Checks:** `aisles.isnull().sum()` and string emptiness for aisle names. |
+| **prior** | **Duplicate Checks:** `prior.duplicated().sum()` to catch repeated order-product pairs.<br>**Null Checks:** `prior.isnull().sum()`.<br>**Referential Integrity:** `prior[~prior['product_id'].isin(products['product_id'])]` and `prior[~prior['order_id'].isin(orders['order_id'])]` to confirm valid foreign key links.<br>**Domain Checks:** `prior['reordered'].unique()` expecting `{0,1}` values only. |
+| **train** | **Null Checks:** `train.isnull().sum()`.<br>**Referential Integrity:** Verified all `product_id` and `order_id` values exist in `products` and `orders`.<br>**Domain Checks:** Ensured `train['reordered']` values conform to binary categories `{0,1}`. |
+---
+
 
