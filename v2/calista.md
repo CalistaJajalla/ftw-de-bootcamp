@@ -82,7 +82,7 @@ The `status` column is central to interpreting results.
 
 0 – INFO
 - **Purpose:** Used for informational checks.  
-- **Example:** Logging row counts just for awareness, not as a strict DQ rule. It’s a soft check and does **not trigger alerts**.
+- **Example:** Logging row counts just for awareness, not as a strict DQ rule. A soft check and does **not trigger alerts**.
 
 1 – PASS
 - **Purpose:** Check passed successfully.  
@@ -94,7 +94,7 @@ The `status` column is central to interpreting results.
 
 3 – FAIL
 - **Purpose:** Check failed or violated critical rules.  
-- **Example:** Duplicate primary keys, required fields null, FK references missing. Signals **urgent action needed**.
+- **Example:** Duplicate primary keys, required fields null, FK references missing. Signals **action is needed (cleaning)**.
 
 ### Sample DQ Results:
 
@@ -107,4 +107,56 @@ Below is a **preview of the DQ checks** for the Insta dataset. Full results are 
 | 2025-10-07 13:33:46 | raw___insta_order_products_train | reorder_rate_baseline         | 1      | 59.8594412751  | expected reorder ~59%                      |
 | 2025-10-07 13:33:46 | raw___insta_order_products_train | add_to_cart_order_min_ge1     | 1      | 1              | min add_to_cart_order should be >=1        |
 | 2025-10-07 13:33:46 | raw___insta_order_products_train | reordered_domain              | 1      | 0              | reordered not in {0,1}                     |
+
+## 3️⃣ Global Checks
+
+### 3.1 Row Counts
+
+This SQL block performs **global data quality checks** for each raw table in the Instacart dataset. The focus here is **volume validation**. It ensures that each table has data before we proceed to more detailed checks.
+
+Purpose
+
+* Verify that each raw table contains rows (non-empty).
+* Log the results into the central DQ table `raw._cali_insta__dq_checks`.
+* Capture both **metric value** (number of rows) and **status** (informational in this case).
+
+SQL Breakdown
+
+```sql
+INSERT INTO raw._cali_insta__dq_checks
+SELECT now(), 'raw___insta_aisles', 'row_count', toUInt8(0) AS status,
+       toFloat64(count()) AS metric_value,
+       'row count' AS metric_text
+FROM raw.raw___insta_aisles
+
+UNION ALL
+SELECT now(), 'raw___insta_departments', 'row_count', 0,
+       toFloat64(count()),
+       'row count'
+FROM raw.raw___insta_departments
+
+UNION ALL
+SELECT now(), 'raw___insta_products', 'row_count', 0,
+       toFloat64(count()),
+       'row count'
+FROM raw.raw___insta_products
+
+UNION ALL
+SELECT now(), 'raw___insta_orders', 'row_count', 0,
+       toFloat64(count()),
+       'row count'
+FROM raw.raw___insta_orders
+
+UNION ALL
+SELECT now(), 'raw___insta_order_products_prior', 'row_count', 0,
+       toFloat64(count()),
+       'row count'
+FROM raw.raw___insta_order_products_prior
+
+UNION ALL
+SELECT now(), 'raw___insta_order_products_train', 'row_count', 0,
+       toFloat64(count()),
+       'row count'
+FROM raw.raw___insta_order_products_train;
+```
 
