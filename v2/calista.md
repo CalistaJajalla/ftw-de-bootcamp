@@ -349,7 +349,7 @@ Checks general table size expectations or metric baselines.
 
 - Where did I get this info from? 
 
-  - Ans: From Kaggle :>. I checked 'Data Explorer' of dataset, specifically aisles.csv, departments.csv, products.csv. I
+  - Ans: From Kaggle :>. I checked 'Data Explorer' of dataset, specifically aisles.csv, departments.csv, products.csv.
 
 - Is this part necessary?
 
