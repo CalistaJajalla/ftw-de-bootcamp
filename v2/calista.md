@@ -108,19 +108,20 @@ Below is a **preview of the DQ checks** for the Insta dataset. Full results are 
 | 2025-10-07 13:33:46 | raw___insta_order_products_train | add_to_cart_order_min_ge1     | 1      | 1              | min add_to_cart_order should be >=1        |
 | 2025-10-07 13:33:46 | raw___insta_order_products_train | reordered_domain              | 1      | 0              | reordered not in {0,1}                     |
 
+---
 ## 3️⃣ Global Checks
 
 ### 3.1 Row Counts
 
 This SQL block performs **global data quality checks** for each raw table in the Instacart dataset. The focus here is **volume validation**. It ensures that each table has data before we proceed to more detailed checks.
 
-Purpose
+Purpose:
 
 * Verify that each raw table contains rows (non-empty).
 * Log the results into the central DQ table `raw._cali_insta__dq_checks`.
 * Capture both **metric value** (number of rows) and **status** (informational in this case).
 
-SQL Breakdown
+SQL Breakdown:
 
 ```sql
 INSERT INTO raw._cali_insta__dq_checks
@@ -158,5 +159,44 @@ SELECT now(), 'raw___insta_order_products_train', 'row_count', 0,
        toFloat64(count()),
        'row count'
 FROM raw.raw___insta_order_products_train;
+```
+
+### 3.2  Distinct ID Counts (Uniqueness of Primary Keys)
+
+This SQL block records **distinct ID counts** for each raw dataset table to verify **primary key uniqueness**.
+
+Purpose:
+
+* Ensure there are no duplicate identifiers across dimensions or facts.  
+* Each result is inserted into the centralized **`raw._cali_insta__dq_checks`** table
+* **Status = 0 (INFO)** since these checks are primarily informational metrics rather than pass/fail thresholds.
+
+SQL Breakdown:
+
+```sql
+-- Distinct ID counts (uniqueness of primary keys)
+INSERT INTO raw._cali_insta__dq_checks
+SELECT now(), 'raw___insta_aisles', 'distinct_aisle_id', 0,
+       toFloat64(uniqExact(aisle_id)),
+       'unique aisle IDs'
+FROM raw.raw___insta_aisles
+
+UNION ALL
+SELECT now(), 'raw___insta_departments', 'distinct_department_id', 0,
+       toFloat64(uniqExact(department_id)),
+       'unique department IDs'
+FROM raw.raw___insta_departments
+
+UNION ALL
+SELECT now(), 'raw___insta_products', 'distinct_product_id', 0,
+       toFloat64(uniqExact(product_id)),
+       'unique product IDs'
+FROM raw.raw___insta_products
+
+UNION ALL
+SELECT now(), 'raw___insta_orders', 'distinct_order_id', 0,
+       toFloat64(uniqExact(order_id)),
+       'unique order IDs'
+FROM raw.raw___insta_orders;
 ```
 
