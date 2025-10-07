@@ -391,7 +391,7 @@ FROM raw.raw___insta_order_products_train;
 MEMA SECTION (coz nde ko pa naayos format sa sql)
 Here's the my sql queries that I run for cleaning:
 
-[full results CSV](data/insta_dq_checks.csv). << ### Not real link, full query is a work in progress....
+[full results CSV](data/insta_dq_checks.csv). ### << Not real link, full query is a work in progress....
 ---
 ## 6️⃣ Next Steps & Links
 - Store results in central DQ table (raw._cali_insta__dq_checks).
