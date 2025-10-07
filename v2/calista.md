@@ -63,8 +63,36 @@ CREATE TABLE IF NOT EXISTS raw._cali_insta__dq_checks
 ENGINE = MergeTree()
 ORDER BY (table_name, check_time);
 ```
+-- Columns:
+-- check_time   : DateTime  - Timestamp of the DQ check. Defaults to now().
+-- table_name   : String    - Table being checked (e.g., raw___insta_orders).
+-- check_name   : String    - Name of the DQ rule (e.g., row_count, distinct_product_id).
+-- status       : UInt8     - Numeric indicator of check result:
+--                            0 = INFO, 1 = PASS, 2 = WARN, 3 = FAIL
+-- metric_value : Float64   - Numeric value of the metric (e.g., row count, % nulls, reorder rate).
+-- metric_text  : String    - Human-readable description of the metric or rule.
 
-Sample DQ Results
+-- ==============================================
+-- STATUS CODES EXPLAINED
+-- ==============================================
+
+-- 0 – INFO
+-- Used for informational checks. Example: logging row counts just for awareness.
+-- Does NOT trigger alerts. Soft check.
+
+-- 1 – PASS
+-- Check passed successfully. Example: row counts within expected range, primary keys unique, foreign keys valid.
+-- Indicates healthy data.
+
+-- 2 – WARN
+-- Check is borderline or slightly outside thresholds. Example: minor missing values (<5%), reorder rate slightly off.
+-- Alerts you that review may be needed, but not critical.
+
+-- 3 – FAIL
+-- Check failed or violated critical rules. Example: duplicate primary keys, required fields null, FK references missing.
+-- Signals urgent action needed.
+
+### Sample DQ Results:
 
 Below is a **preview of the DQ checks** for the Insta dataset. Full results are saved in the CSV file: [full results CSV](data/insta_dq_checks.csv).
 
@@ -75,9 +103,4 @@ Below is a **preview of the DQ checks** for the Insta dataset. Full results are 
 | 2025-10-07 13:33:46 | raw___insta_order_products_train | reorder_rate_baseline         | 1      | 59.8594412751  | expected reorder ~59%                      |
 | 2025-10-07 13:33:46 | raw___insta_order_products_train | add_to_cart_order_min_ge1     | 1      | 1              | min add_to_cart_order should be >=1        |
 | 2025-10-07 13:33:46 | raw___insta_order_products_train | reordered_domain              | 1      | 0              | reordered not in {0,1}                     |
-| 2025-10-07 13:33:28 | raw___insta_order_products_prior | product_fk_missing            | 1      | 0              | product_id not found in products           |
-| 2025-10-07 13:33:28 | raw___insta_order_products_prior | order_fk_missing              | 1      | 0              | order_id not found in orders               |
-| 2025-10-07 13:33:28 | raw___insta_order_products_prior | add_to_cart_order_min_ge1     | 1      | 1              | min add_to_cart_order should be >=1        |
-| 2025-10-07 13:33:28 | raw___insta_order_products_prior | reordered_domain              | 1      | 0              | reordered not in {0,1}                     |
-| 2025-10-07 13:33:28 | raw___insta_order_products_prior | reorder_rate_baseline         | 1      | 58.9697466792  | expected reorder ~59%                      |
 
