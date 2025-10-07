@@ -38,9 +38,26 @@
 
 **Workflow:**
 
-1. 
-2. Inspect raw tables.  
+1. Inspect raw tables in Kaggle (valid, mismatched, missing, unique, and most common)
 2. Apply DQ checks (SQL queries).  
 3. Store results in a central DQ log table: `raw._cali_insta__dq_checks`.  
-4. Analyze outcomes (status: PASS/WARN/FAIL).  
-5. Feed metrics into dashboards (optional).  
+4. Analyze outcomes (status: PASS/WARN/FAIL).
+
+---
+
+## 2️⃣ Setup – DQ Log Table
+
+We create a **central table** to store all DQ metrics. Each row represents one check.
+
+```sql
+CREATE TABLE IF NOT EXISTS raw._cali_insta__dq_checks
+(
+    check_time DateTime DEFAULT now(),
+    table_name String,
+    check_name String,
+    status UInt8,        -- INFO=0, PASS=1, WARN=2, FAIL=3
+    metric_value Float64,
+    metric_text String
+)
+ENGINE = MergeTree()
+ORDER BY (table_name, check_time);
