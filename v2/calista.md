@@ -48,7 +48,7 @@
 
 ## 2️⃣ Setup – DQ Log Table
 
-We create a **central table** to store all DQ metrics. Each row represents one check.
+I created a **central table** to store all DQ metrics, with each row represents one check. Having a central log allows us to track historical DQ results, summarize KPIs, and build dashboards.
 
 ```sql
 CREATE TABLE IF NOT EXISTS raw._cali_insta__dq_checks
@@ -62,3 +62,22 @@ CREATE TABLE IF NOT EXISTS raw._cali_insta__dq_checks
 )
 ENGINE = MergeTree()
 ORDER BY (table_name, check_time);
+```
+
+Sample DQ Results
+
+Below is a **preview of the DQ checks** for the Insta dataset. Full results are saved in the CSV file: [full results CSV](data/insta_dq_checks.csv).
+
+| check_time         | table_name                      | check_name                    | status | metric_value     | metric_text                                |
+|-------------------|--------------------------------|-------------------------------|--------|----------------|-------------------------------------------|
+| 2025-10-07 13:33:46 | raw___insta_order_products_train | order_fk_missing              | 1      | 0              | order_id not found in orders               |
+| 2025-10-07 13:33:46 | raw___insta_order_products_train | product_fk_missing            | 1      | 0              | product_id not found in products           |
+| 2025-10-07 13:33:46 | raw___insta_order_products_train | reorder_rate_baseline         | 1      | 59.8594412751  | expected reorder ~59%                      |
+| 2025-10-07 13:33:46 | raw___insta_order_products_train | add_to_cart_order_min_ge1     | 1      | 1              | min add_to_cart_order should be >=1        |
+| 2025-10-07 13:33:46 | raw___insta_order_products_train | reordered_domain              | 1      | 0              | reordered not in {0,1}                     |
+| 2025-10-07 13:33:28 | raw___insta_order_products_prior | product_fk_missing            | 1      | 0              | product_id not found in products           |
+| 2025-10-07 13:33:28 | raw___insta_order_products_prior | order_fk_missing              | 1      | 0              | order_id not found in orders               |
+| 2025-10-07 13:33:28 | raw___insta_order_products_prior | add_to_cart_order_min_ge1     | 1      | 1              | min add_to_cart_order should be >=1        |
+| 2025-10-07 13:33:28 | raw___insta_order_products_prior | reordered_domain              | 1      | 0              | reordered not in {0,1}                     |
+| 2025-10-07 13:33:28 | raw___insta_order_products_prior | reorder_rate_baseline         | 1      | 58.9697466792  | expected reorder ~59%                      |
+
