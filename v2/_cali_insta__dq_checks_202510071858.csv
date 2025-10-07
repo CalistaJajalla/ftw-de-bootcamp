@@ -1,0 +1,38 @@
+"check_time","table_name","check_name","status","metric_value","metric_text"
+2025-10-07 11:11:36,raw___insta_aisles,row_count,0,134.0,row count
+2025-10-07 11:12:35,raw___insta_aisles,distinct_aisle_id,0,134.0,unique aisle IDs
+2025-10-07 11:15:32,raw___insta_aisles,unique_aisles_expected_134,1,134.0,expected 134 unique aisles
+2025-10-07 11:15:32,raw___insta_aisles,missing_aisle_names,1,0.0,null or blank aisle names
+2025-10-07 11:15:32,raw___insta_aisles,duplicate_rows,1,0.0,full-row duplicates
+2025-10-07 11:11:36,raw___insta_departments,row_count,0,21.0,row count
+2025-10-07 11:12:35,raw___insta_departments,distinct_department_id,0,21.0,unique department IDs
+2025-10-07 11:15:48,raw___insta_departments,missing_department_names,1,0.0,null or blank department names
+2025-10-07 11:15:48,raw___insta_departments,unique_departments_expected_21,1,21.0,expected 21 unique departments
+2025-10-07 11:15:48,raw___insta_departments,duplicate_rows,1,0.0,full-row duplicates
+2025-10-07 11:11:36,raw___insta_order_products_prior,row_count,0,32434489,row count
+2025-10-07 13:33:28,raw___insta_order_products_prior,order_fk_missing,1,0.0,order_id not found in orders
+2025-10-07 13:33:28,raw___insta_order_products_prior,add_to_cart_order_min_ge1,1,1.0,min add_to_cart_order should be >=1
+2025-10-07 13:33:28,raw___insta_order_products_prior,reordered_domain,1,0.0,"reordered not in {0,1}"
+2025-10-07 13:33:28,raw___insta_order_products_prior,reorder_rate_baseline,1,58.969746679221615,expected reorder ~59%
+2025-10-07 13:33:28,raw___insta_order_products_prior,product_fk_missing,1,0.0,product_id not found in products
+2025-10-07 11:11:36,raw___insta_order_products_train,row_count,0,1384617.0,row count
+2025-10-07 13:33:46,raw___insta_order_products_train,reordered_domain,1,0.0,"reordered not in {0,1}"
+2025-10-07 13:33:46,raw___insta_order_products_train,add_to_cart_order_min_ge1,1,1.0,min add_to_cart_order should be >=1
+2025-10-07 13:33:46,raw___insta_order_products_train,reorder_rate_baseline,1,59.859441275096295,expected reorder ~59%
+2025-10-07 13:33:46,raw___insta_order_products_train,product_fk_missing,1,0.0,product_id not found in products
+2025-10-07 13:33:46,raw___insta_order_products_train,order_fk_missing,1,0.0,order_id not found in orders
+2025-10-07 11:11:36,raw___insta_orders,row_count,0,3421083.0,row count
+2025-10-07 11:12:35,raw___insta_orders,distinct_order_id,0,3421083.0,unique order IDs
+2025-10-07 12:08:56,raw___insta_orders,order_number_max_le_100,1,99.0,order_number should be <=100
+2025-10-07 12:08:56,raw___insta_orders,order_dow_domain,1,0.0,order_dow out of [0..6]
+2025-10-07 12:08:56,raw___insta_orders,orders_and_users_baseline,1,3421083.0,"orders=3421083, users=206209"
+2025-10-07 12:08:56,raw___insta_orders,order_hour_domain,1,0.0,hour_of_day out of [0..23]
+2025-10-07 12:08:56,raw___insta_orders,days_since_prior_missing_rate,1,0.0,percent missing days_since_prior_order
+2025-10-07 11:11:36,raw___insta_products,row_count,0,49688.0,row count
+2025-10-07 11:12:35,raw___insta_products,distinct_product_id,0,49688.0,unique product IDs
+2025-10-07 11:16:19,raw___insta_products,missing_critical_fields,1,0.0,product_name/aisle_id/department_id missing
+2025-10-07 11:16:19,raw___insta_products,duplicate_product_id,1,0.0,product_id duplicates
+2025-10-07 11:16:19,raw___insta_products,product_count_expected_49688,1,49688.0,expected ~49688 unique products
+2025-10-07 11:16:19,raw___insta_products,product_name_too_long,1,0.0,names longer than 512 chars
+2025-10-07 11:16:19,raw___insta_products,missing_aisle_ref,1,0.0,aisle_id not found in aisles
+2025-10-07 11:16:19,raw___insta_products,missing_department_ref,1,0.0,department_id not found in departments
