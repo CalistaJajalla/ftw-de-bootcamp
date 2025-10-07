@@ -388,6 +388,7 @@ FROM raw.raw___insta_order_products_train;
 ### Again, full results are saved in the CSV file: [full results CSV](data/insta_dq_checks.csv).
 
 ---
+MEMA SECTION (coz nde ko pa naayos format sa sql)
 Here's the my sql queries that I run for cleaning:
 
 [full results CSV](data/insta_dq_checks.csv). << ### Not real link, full query is a work in progress....
