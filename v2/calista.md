@@ -22,8 +22,7 @@
   - [4.5. Domain / Category Checks](#5-domain--category-checks)  
   - [4.6. Text Length / String Constraints](#6-text-length--string-constraints)  
   - [4.7. Erroneous Row Detection (Schema Mismatch)](#7-erroneous-row-detection-schema-mismatch)  
-  - [Data Quality Checks Summary](#data-quality-checks-summary)
-- [5️⃣ Checklist for Data Cleaning Story](#5️⃣-checklist-for-data-cleaning-story)  
+- [5️⃣ Data Quality Checks Summary](#5️⃣-data-quality-checks-summary)
 - [6️⃣ Next Steps & Links](#6️⃣-next-steps--links)
 
 ---
@@ -349,9 +348,11 @@ WHERE lengthUTF8(product_name) > 512;
 Checks general table size expectations or metric baselines. 
 
 Where did I get this info from? 
+
 Ans: From Kaggle :>. I checked 'Data Explorer' of dataset, specifically aisles.csv, departments.csv, products.csv. I
 
 Is this part necessary?
+
 Ans: Not really, since we already know what's in the dataset. Although this can be helpful for checking ingestion problems.
 
 Sample code:
@@ -373,7 +374,7 @@ SELECT
 FROM raw.raw___insta_order_products_train;
 ```
 ---
-## Data Quality Checks Summary
+## 5️⃣ Data Quality Checks Summary
 
 | Table Name | Checks Performed |
 |-------------|------------------|
@@ -384,5 +385,19 @@ FROM raw.raw___insta_order_products_train;
 | **prior** | **Duplicate Checks:** `prior.duplicated().sum()` to catch repeated order-product pairs.<br>**Null Checks:** `prior.isnull().sum()`.<br>**Referential Integrity:** `prior[~prior['product_id'].isin(products['product_id'])]` and `prior[~prior['order_id'].isin(orders['order_id'])]` to confirm valid foreign key links.<br>**Domain Checks:** `prior['reordered'].unique()` expecting `{0,1}` values only. |
 | **train** | **Null Checks:** `train.isnull().sum()`.<br>**Referential Integrity:** Verified all `product_id` and `order_id` values exist in `products` and `orders`.<br>**Domain Checks:** Ensured `train['reordered']` values conform to binary categories `{0,1}`. |
 ---
+Here's the my sql queries that I run for cleaning:
+
+[full results CSV](data/insta_dq_checks.csv). << ### Not real link, full query is a work in progress....
+---
+## 6️⃣ Next Steps & Links
+- Store results in central DQ table (raw._cali_insta__dq_checks).
+- Perform 'Sanity checks' for data. Like, does the data makes sense? Are prices correct? Are there outliers, keme. 
+
+Reference: 
+- [Instacart Market Basket Analysis](https://www.kaggle.com/datasets/psparks/instacart-market-basket-analysis/data?select=aisles.csv)
+- Sir Myk's Notes
+- [Data Cleaning Materials](https://www.telm.ai/blog/sql-data-quality-checks/)
+- Datacamp my love <3<3
+
 
 
