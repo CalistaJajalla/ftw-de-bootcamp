@@ -43,6 +43,7 @@
 3. Store results in a central DQ log table: `raw._cali_insta__dq_checks`.  
 4. Analyze outcomes (status: PASS/WARN/FAIL).
 
+![Alt text](../v2/Instacart.png "Instacart")
 ---
 
 ## 2️⃣ Setup – DQ Log Table
