@@ -63,34 +63,39 @@ CREATE TABLE IF NOT EXISTS raw._cali_insta__dq_checks
 ENGINE = MergeTree()
 ORDER BY (table_name, check_time);
 ```
--- Columns:
--- check_time   : DateTime  - Timestamp of the DQ check. Defaults to now().
--- table_name   : String    - Table being checked (e.g., raw___insta_orders).
--- check_name   : String    - Name of the DQ rule (e.g., row_count, distinct_product_id).
--- status       : UInt8     - Numeric indicator of check result:
---                            0 = INFO, 1 = PASS, 2 = WARN, 3 = FAIL
--- metric_value : Float64   - Numeric value of the metric (e.g., row count, % nulls, reorder rate).
--- metric_text  : String    - Human-readable description of the metric or rule.
+# 📊 DQ Log Table Columns
 
--- ==============================================
--- STATUS CODES EXPLAINED
--- ==============================================
+| Column         | Type     | Purpose                                                                            |
+| -------------- | -------- | ---------------------------------------------------------------------------------- |
+| `check_time`   | DateTime | Timestamp of the DQ check. Defaults to `now()`.                                    |
+| `table_name`   | String   | Table being checked (e.g., `raw___insta_orders`).                                  |
+| `check_name`   | String   | Name of the DQ rule (e.g., `row_count`, `distinct_product_id`).                    |
+| `status`       | UInt8    | Numeric indicator of check result. Values: `0=INFO`, `1=PASS`, `2=WARN`, `3=FAIL`. |
+| `metric_value` | Float64  | Numeric value of the metric (e.g., row count, percentage nulls, reorder rate).     |
+| `metric_text`  | String   | Human-readable description of the metric or rule (helps dashboards & logs).        |
 
--- 0 – INFO
--- Used for informational checks. Example: logging row counts just for awareness.
--- Does NOT trigger alerts. Soft check.
+---
 
--- 1 – PASS
--- Check passed successfully. Example: row counts within expected range, primary keys unique, foreign keys valid.
--- Indicates healthy data.
+# 🟢 Status Codes
 
--- 2 – WARN
--- Check is borderline or slightly outside thresholds. Example: minor missing values (<5%), reorder rate slightly off.
--- Alerts you that review may be needed, but not critical.
+The `status` column is central to interpreting results.
 
--- 3 – FAIL
--- Check failed or violated critical rules. Example: duplicate primary keys, required fields null, FK references missing.
--- Signals urgent action needed.
+## 0 – INFO
+- **Purpose:** Used for informational checks.  
+- **Example:** Logging row counts just for awareness, not as a strict DQ rule. It’s a soft check and does **not trigger alerts**.
+
+## 1 – PASS
+- **Purpose:** Check passed successfully.  
+- **Example:** Row counts within expected range, primary keys are unique, foreign keys all valid. Indicates **healthy data**.
+
+## 2 – WARN
+- **Purpose:** Check is borderline or slightly outside expected thresholds.  
+- **Example:** Minor missing values (<5%), reorder rate slightly off. Alerts you that **review may be needed**, but it isn’t critical.
+
+## 3 – FAIL
+- **Purpose:** Check failed or violated critical rules.  
+- **Example:** Duplicate primary keys, required fields null, FK references missing. Signals **urgent action needed**.
+
 
 ### Sample DQ Results:
 
