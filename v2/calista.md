@@ -2,7 +2,7 @@
 
 **Date:** `2025-10-07`  
 **Author:** `Calista Jajalla`  
-**Dataset:** Insta Aisles Checks](https://www.kaggle.com/datasets/psparks/instacart-market-basket-analysis/data?select=aisles.csv) (`aisles`, `departments`, `products`, `orders`, `order_products_prior`, `order_products_train`)  
+**Dataset:** [Insta Aisles Checks](https://www.kaggle.com/datasets/psparks/instacart-market-basket-analysis/data?select=aisles.csv) (`aisles`, `departments`, `products`, `orders`, `order_products_prior`, `order_products_train`)  
 **Purpose:** Consolidate **data quality checks**, validate **table integrity**, and create **metrics for dashboards**.
 
 ---
