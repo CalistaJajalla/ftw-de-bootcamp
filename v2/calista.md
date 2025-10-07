@@ -385,7 +385,7 @@ FROM raw.raw___insta_order_products_train;
 | **prior** | **Duplicate Checks:** `prior.duplicated().sum()` to catch repeated order-product pairs.<br>**Null Checks:** `prior.isnull().sum()`.<br>**Referential Integrity:** `prior[~prior['product_id'].isin(products['product_id'])]` and `prior[~prior['order_id'].isin(orders['order_id'])]` to confirm valid foreign key links.<br>**Domain Checks:** `prior['reordered'].unique()` expecting `{0,1}` values only. |
 | **train** | **Null Checks:** `train.isnull().sum()`.<br>**Referential Integrity:** Verified all `product_id` and `order_id` values exist in `products` and `orders`.<br>**Domain Checks:** Ensured `train['reordered']` values conform to binary categories `{0,1}`. |
 
-# Again, full results are saved in the CSV file: [full results CSV](data/insta_dq_checks.csv).
+### Again, full results are saved in the CSV file: [full results CSV](data/insta_dq_checks.csv).
 
 ---
 Here's the my sql queries that I run for cleaning:
